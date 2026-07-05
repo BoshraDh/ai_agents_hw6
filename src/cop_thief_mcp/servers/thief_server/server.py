@@ -1,9 +1,10 @@
-"""FastMCP server hosting the Thief agent (Stage 2: transport skeleton, stub tool only)."""
+"""FastMCP server hosting the Thief agent."""
 
-from cop_thief_mcp.servers.common import build_stub_server
+from cop_thief_mcp.servers.common import build_agent_server
+from cop_thief_mcp.services.game.grid import Role
 from cop_thief_mcp.shared.mcp_config import load_mcp_servers_config
 
-mcp = build_stub_server(name="thief-server", ready_message="thief-server-ready")
+mcp = build_agent_server(name="thief-server", role=Role.THIEF, ready_message="thief-server-ready")
 
 
 def main() -> None:  # pragma: no cover - process entry point, exercised manually/in integration

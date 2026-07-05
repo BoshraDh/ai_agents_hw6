@@ -5,14 +5,25 @@ from fastmcp import Client
 from cop_thief_mcp.servers.cop_server.server import mcp
 
 
+def _call_tool(tool_name: str, arguments: dict):
+    async def _call():
+        async with Client(mcp) as client:
+            return await client.call_tool(tool_name, arguments)
+
+    return asyncio.run(_call())
+
+
 def test_cop_server_name():
     assert mcp.name == "cop-server"
 
 
 def test_cop_server_ping():
-    async def _call() -> str:
-        async with Client(mcp) as client:
-            result = await client.call_tool("ping", {})
-            return result.data
+    assert _call_tool("ping", {}).data == "cop-server-ready"
 
-    assert asyncio.run(_call()) == "cop-server-ready"
+
+def test_cop_server_decide_move_returns_legal_action():
+    request = {"own_row": 2, "own_col": 2, "grid_rows": 5, "grid_cols": 5, "barriers": []}
+
+    result = _call_tool("decide_move", {"request": request})
+
+    assert result.data in {"up", "down", "left", "right", "pass"}

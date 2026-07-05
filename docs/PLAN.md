@@ -6,7 +6,7 @@
 |---|-------|--------|
 | 1 | Game logic, grid rules, movement, barriers, win conditions, scoring | **Done** |
 | 2 | Basic MCP transport — two independent FastMCP servers (stub tools) | **Done** |
-| 3 | Full local run: orchestrator drives real turns end-to-end on localhost | Not started |
+| 3 | Full local run: orchestrator drives real turns end-to-end on localhost | **Done** |
 | 4 | Decision mechanism: heuristic first, Q-table as an optional pluggable policy | Not started |
 | 5 | Natural-language protocol: real LLM-generated messages replace stubs | Not started |
 | 6 | Optional GUI/CLI visualization of the grid | Not started |
@@ -25,14 +25,15 @@ cop-thief-mcp/
 │   ├── sdk/                 # single entry point for all business logic (added stage 3+)
 │   ├── services/
 │   │   ├── game/            # DONE — grid.py, rules.py, sub_game.py, game_series.py, scoring.py
-│   │   ├── decision/        # heuristic.py, q_learning.py (stage 4)
+│   │   ├── decision/        # DONE (placeholder) — random_walk.py; heuristic.py, q_learning.py (stage 4)
 │   │   └── reporting/       # gmail_report.py (stage 8)
 │   ├── servers/
-│   │   ├── common.py         # DONE — shared stub-server factory (no duplication between the two servers)
-│   │   ├── cop_server/       # DONE — FastMCP app, stub `ping` tool, port from config
-│   │   └── thief_server/     # DONE — FastMCP app, stub `ping` tool, port from config
-│   ├── orchestrator/        # MCP-client game runner (stage 3+)
-│   ├── shared/               # DONE — config.py, mcp_config.py, json_loader.py, version.py, constants.py; gatekeeper.py (stage 5+)
+│   │   ├── common.py         # DONE — shared server factory: `ping` + `decide_move` tools
+│   │   ├── lifecycle.py      # DONE — start/stop/wait_for_port, shared by tests + orchestrator
+│   │   ├── cop_server/       # DONE — FastMCP app bound to Role.COP
+│   │   └── thief_server/     # DONE — FastMCP app bound to Role.THIEF
+│   ├── orchestrator/         # DONE — mcp_policy.py, local_runner.py (full local run)
+│   ├── shared/               # DONE — config.py, mcp_config.py, json_loader.py, async_bridge.py, version.py, constants.py; gatekeeper.py (stage 5+)
 │   └── main.py               # CLI entry point
 ├── tests/{unit,integration}/
 ├── docs/{PRD,PLAN,TODO}.md + PRD_<mechanism>.md per major mechanism
@@ -80,6 +81,31 @@ orchestrator-level decision for a later stage, not a game-rule.
   separately via `uv run python -m cop_thief_mcp.servers.<name>.server`)
   and respond correctly on their own ports simultaneously — see
   `docs/PRD_mcp_transport.md` for full detail and testing strategy.
+
+## Stage 3 architecture notes
+
+- `services/decision/random_walk.py` — placeholder policy (uniformly
+  random legal move, or PASS if boxed in). Proves wiring only; replaced
+  behind the same `decide_move` tool interface in Stage 4.
+- `servers/common.py::build_agent_server` now also registers a
+  `decide_move` tool whose request (`TurnRequest`) carries only the
+  acting agent's own position, the grid, and barriers — never the
+  opponent's position, enforcing partial observability at the transport
+  level from this stage onward.
+- `shared/async_bridge.py::AsyncBridge` — a background event-loop thread
+  so the still-synchronous Stage 1 engine can call FastMCP's async
+  `Client` without becoming async itself.
+- `orchestrator/mcp_policy.py` — builds a Stage-1-compatible `Policy`
+  backed by a real `decide_move` MCP call; `build_decide_move_request`
+  (the pure context → wire-request conversion) is separately unit-tested.
+- `orchestrator/local_runner.py::run_full_local_series` — starts both real
+  MCP servers, builds an MCP-backed policy per side, runs Stage 1's
+  `run_game_series` unmodified, tears down. Manually verified against the
+  production config: a full 6-game series produced a correct mix of
+  Cop/Thief wins with accumulated totals.
+- `servers/lifecycle.py` — extracted from Stage 2's integration test so
+  "start/stop a background HTTP server and wait until reachable" exists
+  once, reused by both the transport test and the orchestrator.
 
 ## Open design decisions deferred to later stages
 

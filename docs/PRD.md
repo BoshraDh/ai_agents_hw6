@@ -69,10 +69,12 @@ Dec-POMDP formalization (`⟨n, S, {Aᵢ}, P, R, {Ωᵢ}, O, γ⟩`) — full de
 
 ## Non-goals (current stage)
 
-Stages 1–2 (complete) cover the pure game-logic engine and the basic MCP
-transport skeleton (two independent FastMCP servers with a stub tool each).
-LLM integration, natural-language messaging, decision policies beyond
-scripted test doubles, GUI, cloud deployment, and Gmail reporting are
+Stages 1–3 (complete) cover the pure game-logic engine, the MCP transport
+skeleton, and a fully wired local orchestrator that runs a real 6-game
+series through both real MCP servers — but move selection is still a
+placeholder (uniformly random legal move), not real intelligence. LLM
+integration, the natural-language protocol, a real decision policy
+(heuristic/Q-table), GUI, cloud deployment, and Gmail reporting are
 explicitly out of scope until their respective stages (see `docs/PLAN.md`).
 
 ## Success criteria

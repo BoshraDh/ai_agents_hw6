@@ -33,16 +33,27 @@
 - [x] Commit + push Stage 2
 - [ ] Report to user, get go-ahead for Stage 3
 
-## Stage 3 — Full local run (not started)
+## Stage 3 — Full local run
 
-- [ ] `orchestrator/` — MCP-client game runner driving real turns end-to-end
-- [ ] Wire orchestrator to the Stage 1 game engine (apply real moves from tool calls)
-- [ ] Integration test: full local run on localhost, both servers + orchestrator
+- [x] `services/decision/random_walk.py` — placeholder random-legal-move policy
+- [x] `servers/common.py` — added `decide_move` tool (own state only, no opponent leak)
+- [x] `servers/lifecycle.py` — start/stop/wait_for_port, extracted for reuse
+- [x] `shared/async_bridge.py` — background event loop so sync engine can call async MCP client
+- [x] `orchestrator/mcp_policy.py` — MCP-backed Policy + pure request builder
+- [x] `orchestrator/local_runner.py` — `run_full_local_series`, wired to Stage 1 engine
+- [x] Refactored Stage 2 integration test to reuse `servers/lifecycle.py`
+- [x] Integration test: full local run on localhost, both servers + orchestrator
+- [x] Manual run against production config: full 6-game series, real mixed outcomes
+- [x] 57 tests total, 99.65% coverage, zero Ruff violations
+- [x] `docs/PRD_orchestrator.md` written; PRD/PLAN/TODO/README updated
+- [x] Commit + push Stage 3
+- [ ] Report to user, get go-ahead for Stage 4
 
 ## Stage 4 — Decision mechanism (not started)
 
 - [ ] `services/decision/heuristic.py` — default policy (e.g. distance-based)
 - [ ] `services/decision/q_learning.py` — optional tabular Q-table policy
+- [ ] Replace `random_walk` behind the `decide_move` tool with the real policy
 
 ## Stage 5 — Natural-language protocol (not started)
 
