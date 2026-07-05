@@ -16,6 +16,7 @@ from cop_thief_mcp.services.decision.dispatch import LLM
 from cop_thief_mcp.services.game.game_series import GameSeriesResult, run_game_series
 from cop_thief_mcp.services.game.grid import Grid, Position, Role
 from cop_thief_mcp.services.game.sub_game import OnTurn
+from cop_thief_mcp.services.reporting.report_flow import send_series_report
 from cop_thief_mcp.shared.async_bridge import AsyncBridge
 from cop_thief_mcp.shared.config import GameConfig, load_config
 from cop_thief_mcp.shared.mcp_config import McpServersConfig, load_mcp_servers_config
@@ -40,11 +41,16 @@ def run_full_local_series(
     game_config: GameConfig | None = None,
     servers_config: McpServersConfig | None = None,
     on_turn: OnTurn | None = None,
+    send_report: bool = False,
 ) -> GameSeriesResult:
     """Start both MCP servers locally, play a full series through them, then tear down.
 
     `on_turn`, if given, is forwarded to the engine for observation only
     (e.g. a CLI/GUI visualizer) — see `services/visualization/grid_renderer.py`.
+    `send_report`, if True, emails the Internal Game JSON report (task doc
+    section 9.1) to `game_config.report_recipient` once the series
+    completes — see `services/reporting/`. Defaults to False so tests and
+    casual runs never trigger a real email.
     """
     game_config = game_config or load_config()
     servers_config = servers_config or load_mcp_servers_config()
@@ -67,9 +73,14 @@ def run_full_local_series(
                 _server_url(servers_config.thief_server.host, servers_config.thief_server.port),
                 bridge,
             )
-            return run_game_series(grid, starts, cop_policy, thief_policy, game_config, on_turn)
+            result = run_game_series(grid, starts, cop_policy, thief_policy, game_config, on_turn)
         finally:
             bridge.run(stop_server(cop_task))
             bridge.run(stop_server(thief_task))
     finally:
         bridge.close()
+
+    if send_report:
+        send_series_report(result, game_config, servers_config)
+
+    return result

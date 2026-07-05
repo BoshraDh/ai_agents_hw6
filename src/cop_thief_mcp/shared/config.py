@@ -24,6 +24,9 @@ class GameConfig:
     num_games: int
     max_barriers: int
     decision_policy: str
+    report_recipient: str
+    github_repo: str
+    group_name: str
     scoring: ScoringConfig
 
 
@@ -43,6 +46,9 @@ def load_config(path: Path | None = None) -> GameConfig:
         num_games=raw["num_games"],
         max_barriers=raw["max_barriers"],
         decision_policy=raw["decision_policy"],
+        report_recipient=raw["report_recipient"],
+        github_repo=raw["github_repo"],
+        group_name=raw["group_name"],
         scoring=ScoringConfig(
             cop_win_cop=scoring_raw["cop_win"]["cop"],
             cop_win_thief=scoring_raw["cop_win"]["thief"],

@@ -19,6 +19,9 @@ TEST_GAME_CONFIG = GameConfig(
     num_games=3,
     max_barriers=5,
     decision_policy="heuristic",
+    report_recipient="test@example.com",
+    github_repo="https://github.com/example/example.git",
+    group_name="test-group",
     scoring=ScoringConfig(cop_win_cop=20, cop_win_thief=5, thief_win_cop=5, thief_win_thief=10),
 )
 

@@ -11,7 +11,7 @@
 | 5 | Natural-language protocol: real LLM-generated messages replace stubs | **Done** |
 | 6 | Optional GUI/CLI visualization of the grid | **Done** |
 | 7 | Cloud deployment (e.g. Prefect Cloud), tokens, revocable auth | Deferred |
-| 8 | Gmail API integration — auto-report JSON at end of 6-game series | Not started |
+| 8 | Gmail API integration — auto-report JSON at end of 6-game series | **Done** |
 
 Only one stage is worked at a time; each stage's code + docs are committed
 and pushed together, followed by an explicit checkpoint with the user
@@ -26,7 +26,7 @@ cop-thief-mcp/
 │   ├── services/
 │   │   ├── game/            # DONE — grid.py, rules.py, sub_game.py, game_series.py, scoring.py
 │   │   ├── decision/        # DONE — random_walk.py, heuristic.py (default), q_learning.py + q_learning_training.py (optional), dispatch.py
-│   │   └── reporting/       # gmail_report.py (stage 8)
+│   │   └── reporting/       # DONE — game_report.py, gmail_client.py, gmail_sender.py, report_flow.py (Stage 8)
 │   ├── servers/
 │   │   ├── common.py         # DONE — shared server factory: `ping` + `decide_move` tools
 │   │   ├── lifecycle.py      # DONE — start/stop/wait_for_port, shared by tests + orchestrator
@@ -35,7 +35,7 @@ cop-thief-mcp/
 │   ├── orchestrator/         # DONE — mcp_policy.py (+ message_exchange.py), local_runner.py
 │   ├── services/llm/         # DONE — prompts.py, openai_agent.py, client_factory.py (Stage 5)
 │   ├── services/visualization/ # DONE — grid_renderer.py (Stage 6, optional)
-│   ├── cli/                  # DONE — watch_game.py (Stage 6, optional)
+│   ├── cli/                  # DONE — watch_game.py (Stage 6, optional), run_series.py (Stage 8)
 │   ├── shared/               # DONE — config.py, mcp_config.py, json_loader.py, async_bridge.py, gatekeeper.py, rate_limits_config.py, version.py, constants.py
 │   └── main.py               # CLI entry point
 ├── tests/{unit,integration}/
@@ -176,6 +176,30 @@ orchestrator-level decision for a later stage, not a game-rule.
 - Live NL-message display alongside the grid was deliberately left out
   this stage (messages live in `MessageExchange`, not `TurnEvent`) — see
   `docs/PRD_visualization.md`.
+
+## Stage 8 architecture notes
+
+- `config/setup.json` gained `report_recipient`, `github_repo`, and
+  `group_name` (all config-driven, no hard-coding).
+- `services/reporting/game_report.py::build_game_report` — pure builder
+  of the task doc's Internal Game JSON schema from a `GameSeriesResult`.
+- `services/reporting/gmail_client.py::build_gmail_service` — reuses the
+  OAuth client/token already validated earlier in this environment for a
+  separate project (not a new client); loads the cached token **without**
+  forcing a scopes override, to avoid narrowing a token file shared with
+  that other project (a real bug found and fixed this stage — see
+  `docs/PRD_gmail_reporting.md`).
+- `services/reporting/gmail_sender.py::send_game_report` — sends via the
+  `ApiGatekeeper` (new `"gmail"` entry in `config/rate_limits.json`); the
+  email body is the JSON report only, verified by a test.
+- `services/reporting/report_flow.py::send_series_report` — ties the
+  above together; called from `local_runner.py::run_full_local_series`
+  behind a `send_report: bool = False` flag, so tests/casual runs never
+  send a real email — only `cli/run_series.py` (the "real" entry point)
+  sets it `True`.
+- Real end-to-end verified: an actual game series sent a real email to
+  `rmisegal+uoh26b@gmail.com` via the reused OAuth token, twice (before
+  and after the scope-narrowing fix), confirming both the send and the fix.
 
 ## Open design decisions deferred to later stages
 

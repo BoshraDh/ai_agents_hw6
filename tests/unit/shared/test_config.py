@@ -10,6 +10,10 @@ def test_load_config_reads_default_setup_json():
     assert config.max_moves == 25
     assert config.num_games == 6
     assert config.max_barriers == 5
+    assert config.decision_policy == "heuristic"
+    assert config.report_recipient == "rmisegal+uoh26b@gmail.com"
+    assert config.github_repo == "https://github.com/BoshraDh/ai_agents_hw6.git"
+    assert config.group_name == "BoshraDh"
     assert config.scoring.cop_win_cop == 20
     assert config.scoring.cop_win_thief == 5
     assert config.scoring.thief_win_cop == 5

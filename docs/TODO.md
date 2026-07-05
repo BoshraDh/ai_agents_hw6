@@ -112,15 +112,31 @@
 - [x] 119 tests total, 98.92% coverage, zero Ruff violations
 - [x] `docs/PRD_visualization.md` written; PRD/PLAN/TODO/README updated
 - [x] Commit + push Stage 6
-- [ ] Report to user, get go-ahead for Stage 7/8
+- [x] Report to user, get go-ahead for Stage 7/8
 
 ## Stage 7 — Cloud deployment (deferred, not started)
 
 - [ ] Prefect Cloud (or alternative) deployment of both MCP servers
 - [ ] Token-based auth, revocable
 
-## Stage 8 — Gmail reporting (not started)
+## Stage 8 — Gmail reporting
 
-- [ ] `services/reporting/gmail_report.py` — builds Internal Game JSON, sends via Gmail API
-- [ ] Reuse OAuth pattern from `gmail-calendar-test`, secret path via env var
-- [ ] Wire into end of 6-game series in the orchestrator
+- [x] `config/setup.json` — added `report_recipient`, `github_repo`, `group_name`
+- [x] `services/reporting/game_report.py` — builds Internal Game JSON (pure)
+- [x] `services/reporting/gmail_client.py` — reuses existing OAuth client/token
+      (not a new client), scope-preserving load (bug found + fixed, see
+      docs/PRD_gmail_reporting.md)
+- [x] `services/reporting/gmail_sender.py` — sends via Gmail API through the
+      ApiGatekeeper; email body is JSON-only, verified by a test
+- [x] `services/reporting/report_flow.py` — ties report + Gmail together
+- [x] `local_runner.py` — `send_report: bool = False` flag; only
+      `cli/run_series.py` (real entry point) sets it True
+- [x] Unit tests fully mocked (zero real emails from the test suite)
+- [x] Real end-to-end verification: sent a real email to
+      rmisegal+uoh26b@gmail.com via the reused OAuth token -- twice (before
+      and after fixing the scope-narrowing bug), confirming both the send
+      and the fix; shared token.json's scopes verified intact afterward
+- [x] 127 tests total, 97.93% coverage, zero Ruff violations
+- [x] `docs/PRD_gmail_reporting.md` written; PRD/PLAN/TODO/README updated
+- [x] Commit + push Stage 8
+- [ ] Report to user

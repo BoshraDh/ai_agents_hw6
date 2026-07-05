@@ -6,15 +6,16 @@ natural language over two separate [FastMCP](https://github.com/jlowin/fastmcp)
 servers. See `docs/PRD.md` for the full requirements and `docs/PLAN.md` for
 the staged build roadmap; this project is built one stage at a time.
 
-**Current status: Stage 6 complete** — on top of the heuristic/Q-learning
-decision policies (Stage 4) and real LLM-driven natural-language
-communication (Stage 5, verified against the real OpenAI API), you can
-now watch a game unfold: `uv run python -m cop_thief_mcp.cli.watch_game`
-prints the ASCII grid after every turn. `decision_policy` in
-`config/setup.json` still defaults to `"heuristic"` for routine/free
-runs; pass `"llm"` to use real natural-language agents (requires
-`OPENAI_API_KEY` in `.env`). Cloud deployment (Stage 7) and Gmail
-reporting (Stage 8) land later.
+**Current status: Stage 8 complete** — on top of the heuristic/Q-learning
+decision policies (Stage 4), real LLM-driven natural-language
+communication (Stage 5, verified against the real OpenAI API), and the
+CLI grid visualizer (Stage 6), the Cop agent now automatically emails a
+JSON summary report at the end of a game series — verified against the
+real Gmail API (`uv run python -m cop_thief_mcp.cli.run_series`).
+`decision_policy` in `config/setup.json` still defaults to `"heuristic"`
+for routine/free runs; pass `"llm"` to use real natural-language agents
+(requires `OPENAI_API_KEY` in `.env`). Only cloud deployment (Stage 7)
+remains — deferred by design.
 
 ## Requirements
 
@@ -80,11 +81,24 @@ Runs a full local series (using whichever `decision_policy` is
 configured) and prints the ASCII grid (`C`/`T`/`#`/`X` for Cop/Thief/
 barrier/capture) after every turn.
 
+## Running the full series with an emailed report (Stage 8)
+
+```bash
+uv run python -m cop_thief_mcp.cli.run_series
+```
+
+Runs a full local series and, once it completes, emails the Internal
+Game JSON report to `config/setup.json`'s `report_recipient` — the email
+body is the JSON only, no free text, per the task doc. Requires
+`GOOGLE_CLIENT_SECRET_PATH` in `.env` pointing at an OAuth client with
+Gmail access (reuses whatever token is already cached alongside it).
+
 ## Configuration
 
 All game parameters live in `config/setup.json` — grid size, max moves per
 sub-game, number of sub-games in a series, max barriers, the decision
-policy, and the scoring table. Nothing is hard-coded in source.
+policy, the report recipient/repo/group name, and the scoring table.
+Nothing is hard-coded in source.
 
 ## Testing
 
@@ -93,9 +107,10 @@ uv run pytest tests/ --cov=src --cov-report=term-missing
 uv run ruff check .
 ```
 
-Coverage must stay at or above 85% (currently 98.92% overall, 119 tests);
-linting must pass with zero violations. All LLM tests mock the OpenAI
-client — no real API calls or cost in the automated suite.
+Coverage must stay at or above 85% (currently 97.93% overall, 127 tests);
+linting must pass with zero violations. All LLM and Gmail tests mock the
+respective clients — no real API calls, emails, or cost in the automated
+suite.
 
 ## Project structure
 
@@ -105,13 +120,14 @@ src/cop_thief_mcp/
 ├── services/decision/      # heuristic/random_walk/q_learning policies (Stage 3+)
 ├── services/llm/           # OpenAI-backed NL agent: prompts, client, decide_turn (Stage 5)
 ├── services/visualization/ # pure ASCII grid renderer (Stage 6, optional)
+├── services/reporting/     # Internal Game JSON + Gmail auto-report (Stage 8)
 ├── servers/                # Cop/Thief FastMCP servers (Stage 2-3)
 ├── orchestrator/           # MCP-client game runner + message exchange (Stage 3-5)
-├── cli/                    # watch_game.py (Stage 6, optional)
+├── cli/                    # watch_game.py (Stage 6), run_series.py (Stage 8)
 ├── shared/                 # config, version, constants, async bridge, API gatekeeper
 └── main.py                 # CLI entry point
 tests/unit/                # mirrors src/ structure
-tests/integration/          # cross-component tests (real MCP transport, full local run, LLM message relay)
+tests/integration/          # cross-component tests (real MCP transport, full local run, LLM message relay, report wiring)
 docs/                       # PRD.md, PLAN.md, TODO.md, PRD_<mechanism>.md
 config/                     # setup.json, mcp_servers.json, rate_limits.json — all parameters
 ```
@@ -127,6 +143,7 @@ config/                     # setup.json, mcp_servers.json, rate_limits.json —
 - `docs/PRD_decision_engine.md` — Stage 4 mechanism-specific design
 - `docs/PRD_mcp_orchestration.md` — Stage 5 mechanism-specific design
 - `docs/PRD_visualization.md` — Stage 6 mechanism-specific design
+- `docs/PRD_gmail_reporting.md` — Stage 8 mechanism-specific design
 
 ## License
 

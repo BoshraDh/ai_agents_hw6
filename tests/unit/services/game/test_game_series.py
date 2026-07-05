@@ -18,6 +18,9 @@ def _config(num_games: int) -> GameConfig:
         num_games=num_games,
         max_barriers=5,
         decision_policy="heuristic",
+        report_recipient="test@example.com",
+        github_repo="https://github.com/example/example.git",
+        group_name="test-group",
         scoring=SCORING,
     )
 

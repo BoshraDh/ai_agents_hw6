@@ -5,6 +5,9 @@
   "num_games": 6,
   "max_barriers": 5,
   "decision_policy": "heuristic",
+  "report_recipient": "rmisegal+uoh26b@gmail.com",
+  "github_repo": "https://github.com/BoshraDh/ai_agents_hw6.git",
+  "group_name": "BoshraDh",
   "scoring": {
     "cop_win": {"cop": 20, "thief": 5},
     "thief_win": {"cop": 5, "thief": 10}

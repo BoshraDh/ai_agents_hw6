@@ -5,6 +5,11 @@
       "requests_per_minute": 30,
       "max_retries": 3,
       "retry_after_seconds": 5
+    },
+    "gmail": {
+      "requests_per_minute": 10,
+      "max_retries": 3,
+      "retry_after_seconds": 5
     }
   }
 }
