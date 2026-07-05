@@ -1,0 +1,5 @@
+{
+  "version": "1.00",
+  "cop_server": {"host": "127.0.0.1", "port": 8001},
+  "thief_server": {"host": "127.0.0.1", "port": 8002}
+}

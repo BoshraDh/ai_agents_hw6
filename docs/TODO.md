@@ -16,14 +16,22 @@
 - [x] Commit + push Stage 1
 - [ ] Report to user, get go-ahead for Stage 2
 
-## Stage 2 — Basic MCP transport (not started)
+## Stage 2 — Basic MCP transport
 
-- [ ] Add `fastmcp` dependency
-- [ ] `servers/cop_server/` — minimal FastMCP app with a stub tool
-- [ ] `servers/thief_server/` — minimal FastMCP app with a stub tool
-- [ ] Prove both servers run independently on separate localhost ports
-- [ ] Unit/integration tests for server startup and stub tool calls
-- [ ] Update PRD/PLAN/TODO, commit + push
+- [x] Add `fastmcp` dependency
+- [x] `servers/common.py` — shared stub-server factory (no duplicated logic)
+- [x] `servers/cop_server/` — minimal FastMCP app with a stub tool
+- [x] `servers/thief_server/` — minimal FastMCP app with a stub tool
+- [x] `config/mcp_servers.json` + `shared/mcp_config.py` — host/port config-driven
+- [x] `shared/json_loader.py` — shared JSON reader (no duplication with `config.py`)
+- [x] Prove both servers run independently on separate localhost ports (real
+      OS processes on ports 8001/8002, manually verified)
+- [x] Unit tests (in-memory `Client`) + integration test (real HTTP, two
+      concurrent servers on dedicated test ports 8091/8092)
+- [x] 100% coverage maintained (43 tests total), zero Ruff violations
+- [x] `docs/PRD_mcp_transport.md` written; PRD/PLAN/TODO/README updated
+- [x] Commit + push Stage 2
+- [ ] Report to user, get go-ahead for Stage 3
 
 ## Stage 3 — Full local run (not started)
 

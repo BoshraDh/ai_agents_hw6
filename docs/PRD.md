@@ -67,13 +67,13 @@ channel load-bearing rather than decorative, and matches the task doc's
 Dec-POMDP formalization (`⟨n, S, {Aᵢ}, P, R, {Ωᵢ}, O, γ⟩`) — full detail in
 `docs/PRD_mcp_orchestration.md`.
 
-## Non-goals (this stage)
+## Non-goals (current stage)
 
-Stage 1 (current) covers only the pure game-logic engine — grid, rules,
-turn loop, scoring. MCP servers, LLM integration, natural-language
-messaging, decision policies beyond scripted test doubles, GUI, cloud
-deployment, and Gmail reporting are explicitly out of scope until their
-respective stages (see `docs/PLAN.md`).
+Stages 1–2 (complete) cover the pure game-logic engine and the basic MCP
+transport skeleton (two independent FastMCP servers with a stub tool each).
+LLM integration, natural-language messaging, decision policies beyond
+scripted test doubles, GUI, cloud deployment, and Gmail reporting are
+explicitly out of scope until their respective stages (see `docs/PLAN.md`).
 
 ## Success criteria
 

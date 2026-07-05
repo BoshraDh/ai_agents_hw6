@@ -1,10 +1,10 @@
 """Loads all game parameters from config/setup.json. No hard-coded game values elsewhere."""
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 
 from cop_thief_mcp.shared.constants import DEFAULT_CONFIG_PATH
+from cop_thief_mcp.shared.json_loader import read_json
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ class GameConfig:
 def load_config(path: Path | None = None) -> GameConfig:
     """Read and validate the game configuration from a JSON file."""
     config_path = path or DEFAULT_CONFIG_PATH
-    raw = json.loads(config_path.read_text(encoding="utf-8"))
+    raw = read_json(config_path)
 
     rows, cols = raw["grid_size"]
     scoring_raw = raw["scoring"]

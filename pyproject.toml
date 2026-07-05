@@ -4,7 +4,9 @@ version = "1.00"
 description = "Dual AI agent (Cop vs Thief) pursuit game orchestrated via MCP servers"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastmcp>=3.4.2",
+]
 
 [build-system]
 requires = ["hatchling"]

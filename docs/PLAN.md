@@ -5,7 +5,7 @@
 | # | Stage | Status |
 |---|-------|--------|
 | 1 | Game logic, grid rules, movement, barriers, win conditions, scoring | **Done** |
-| 2 | Basic MCP transport — two independent FastMCP servers (stub tools) | Not started |
+| 2 | Basic MCP transport — two independent FastMCP servers (stub tools) | **Done** |
 | 3 | Full local run: orchestrator drives real turns end-to-end on localhost | Not started |
 | 4 | Decision mechanism: heuristic first, Q-table as an optional pluggable policy | Not started |
 | 5 | Natural-language protocol: real LLM-generated messages replace stubs | Not started |
@@ -28,10 +28,11 @@ cop-thief-mcp/
 │   │   ├── decision/        # heuristic.py, q_learning.py (stage 4)
 │   │   └── reporting/       # gmail_report.py (stage 8)
 │   ├── servers/
-│   │   ├── cop_server/      # FastMCP app (stage 2+)
-│   │   └── thief_server/    # FastMCP app (stage 2+)
+│   │   ├── common.py         # DONE — shared stub-server factory (no duplication between the two servers)
+│   │   ├── cop_server/       # DONE — FastMCP app, stub `ping` tool, port from config
+│   │   └── thief_server/     # DONE — FastMCP app, stub `ping` tool, port from config
 │   ├── orchestrator/        # MCP-client game runner (stage 3+)
-│   ├── shared/               # DONE — config.py, version.py, constants.py; gatekeeper.py (stage 2+)
+│   ├── shared/               # DONE — config.py, mcp_config.py, json_loader.py, version.py, constants.py; gatekeeper.py (stage 5+)
 │   └── main.py               # CLI entry point
 ├── tests/{unit,integration}/
 ├── docs/{PRD,PLAN,TODO}.md + PRD_<mechanism>.md per major mechanism
@@ -61,6 +62,24 @@ Starting positions per sub-game are intentionally left as a caller-supplied
 parameter (`list[tuple[Position, Position]]`) rather than baked into the
 engine — placement strategy (random draw vs. fixed layout) is an
 orchestrator-level decision for a later stage, not a game-rule.
+
+## Stage 2 architecture notes
+
+- `servers/common.py::build_stub_server(name, ready_message)` — the only
+  place a FastMCP app is constructed; both `cop_server` and `thief_server`
+  call it with different arguments rather than duplicating setup code.
+- `servers/cop_server/server.py` / `servers/thief_server/server.py` — thin
+  (~15-line) process entry points: build the app via the shared factory,
+  load their own host/port from config, run over HTTP transport.
+- `shared/mcp_config.py` + `config/mcp_servers.json` — Cop/Thief host and
+  port are config-driven, never hard-coded (defaults: `127.0.0.1:8001` /
+  `127.0.0.1:8002`).
+- `shared/json_loader.py` — extracted so `config.py` and `mcp_config.py`
+  don't duplicate JSON-reading logic.
+- Verified both servers run as genuinely independent processes (started
+  separately via `uv run python -m cop_thief_mcp.servers.<name>.server`)
+  and respond correctly on their own ports simultaneously — see
+  `docs/PRD_mcp_transport.md` for full detail and testing strategy.
 
 ## Open design decisions deferred to later stages
 
