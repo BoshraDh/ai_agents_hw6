@@ -34,4 +34,4 @@ def test_cop_server_decide_move_returns_legal_action():
 
     result = _call_tool("decide_move", {"request": request})
 
-    assert result.data in {"up", "down", "left", "right", "pass"}
+    assert result.data.action in {"up", "down", "left", "right", "pass"}

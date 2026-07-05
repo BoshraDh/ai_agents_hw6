@@ -14,6 +14,7 @@ from cop_thief_mcp.services.game.grid import Action, Grid, Position, Role
 HEURISTIC = "heuristic"
 RANDOM_WALK = "random_walk"
 Q_LEARNING = "q_learning"
+LLM = "llm"
 
 
 def choose_action(

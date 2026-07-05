@@ -1,0 +1,10 @@
+{
+  "version": "1.00",
+  "services": {
+    "openai": {
+      "requests_per_minute": 30,
+      "max_retries": 3,
+      "retry_after_seconds": 5
+    }
+  }
+}

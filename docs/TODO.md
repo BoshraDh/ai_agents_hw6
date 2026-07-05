@@ -71,13 +71,31 @@
 - [x] 83 tests total, 99.09% coverage, zero Ruff violations
 - [x] `docs/PRD_decision_engine.md` written; PRD/PLAN/TODO/README updated
 - [x] Commit + push Stage 4
-- [ ] Report to user, get go-ahead for Stage 5
+- [x] Report to user, get go-ahead for Stage 5
 
-## Stage 5 — Natural-language protocol (not started)
+## Stage 5 — Natural-language protocol
 
-- [ ] `docs/PRD_mcp_orchestration.md` — Dec-POMDP formalization, NL protocol design
-- [ ] `shared/gatekeeper.py` — centralized rate-limited OpenAI client wrapper
-- [ ] Replace stub messages with real LLM-generated NL messages
+- [x] `shared/gatekeeper.py` + `shared/rate_limits_config.py` +
+      `config/rate_limits.json` — centralized rate-limited OpenAI wrapper
+- [x] `services/llm/prompts.py` — system/user prompt builders (no opponent
+      position parameter, structurally guarded by a test)
+- [x] `services/llm/openai_agent.py` — `decide_turn`, JSON parsing, legal-
+      action validation, fallback to `random_walk` on any failure
+- [x] `services/llm/client_factory.py` — OpenAI client from `OPENAI_API_KEY`
+- [x] `servers/common.py` — `TurnRequest`/`TurnResponse` extended for the
+      `llm` policy; `decide_move` always returns `{action, message}`
+- [x] `orchestrator/message_exchange.py` + `mcp_policy.py::build_mcp_message_policy`
+      — free-text message relay between the two sides
+- [x] `local_runner.py` — selects ground-truth vs. message-based policy
+      building per `decision_policy`
+- [x] Unit tests fully mocked (zero real API calls/cost); integration test
+      proves message relay over real MCP HTTP transport
+- [x] 110 tests total, 98.82% coverage, zero Ruff violations, all files <= 137 lines
+- [x] `docs/PRD_mcp_orchestration.md` — Dec-POMDP formalization + design
+- [ ] Real end-to-end verification with an actual `OPENAI_API_KEY` (still
+      pending -- user has not yet provided a key)
+- [x] Commit + push Stage 5
+- [ ] Report to user, get go-ahead for Stage 6
 
 ## Stage 6 — Optional visualization (not started)
 

@@ -8,7 +8,7 @@
 | 2 | Basic MCP transport — two independent FastMCP servers (stub tools) | **Done** |
 | 3 | Full local run: orchestrator drives real turns end-to-end on localhost | **Done** |
 | 4 | Decision mechanism: heuristic first, Q-table as an optional pluggable policy | **Done** |
-| 5 | Natural-language protocol: real LLM-generated messages replace stubs | Not started |
+| 5 | Natural-language protocol: real LLM-generated messages replace stubs | **Done** |
 | 6 | Optional GUI/CLI visualization of the grid | Not started |
 | 7 | Cloud deployment (e.g. Prefect Cloud), tokens, revocable auth | Deferred |
 | 8 | Gmail API integration — auto-report JSON at end of 6-game series | Not started |
@@ -32,8 +32,9 @@ cop-thief-mcp/
 │   │   ├── lifecycle.py      # DONE — start/stop/wait_for_port, shared by tests + orchestrator
 │   │   ├── cop_server/       # DONE — FastMCP app bound to Role.COP
 │   │   └── thief_server/     # DONE — FastMCP app bound to Role.THIEF
-│   ├── orchestrator/         # DONE — mcp_policy.py, local_runner.py (full local run)
-│   ├── shared/               # DONE — config.py, mcp_config.py, json_loader.py, async_bridge.py, version.py, constants.py; gatekeeper.py (stage 5+)
+│   ├── orchestrator/         # DONE — mcp_policy.py (+ message_exchange.py), local_runner.py
+│   ├── services/llm/         # DONE — prompts.py, openai_agent.py, client_factory.py (Stage 5)
+│   ├── shared/               # DONE — config.py, mcp_config.py, json_loader.py, async_bridge.py, gatekeeper.py, rate_limits_config.py, version.py, constants.py
 │   └── main.py               # CLI entry point
 ├── tests/{unit,integration}/
 ├── docs/{PRD,PLAN,TODO}.md + PRD_<mechanism>.md per major mechanism
@@ -132,10 +133,35 @@ orchestrator-level decision for a later stage, not a game-rule.
   non-capturing cycle. Every other tested starting separation (distance
   >= 2, including opposite grid corners) captures reliably.
 
+## Stage 5 architecture notes
+
+- `services/llm/prompts.py` — pure system/user prompt builders. Structurally
+  incapable of referencing the opponent's position (no such parameter
+  exists in `build_user_prompt`'s signature, enforced by a test).
+- `services/llm/openai_agent.py::decide_turn` — calls OpenAI via the
+  gatekeeper, parses `{"action", "message"}` JSON, falls back to
+  `random_walk` (empty message) on any failure (network, malformed JSON,
+  illegal action).
+- `services/llm/client_factory.py` — builds the OpenAI client from
+  `OPENAI_API_KEY` only.
+- `shared/gatekeeper.py` + `shared/rate_limits_config.py` +
+  `config/rate_limits.json` — the mandatory centralized, rate-limited,
+  retried chokepoint for every external API call (OpenAI now, Gmail in
+  Stage 8).
+- `orchestrator/message_exchange.py` + `mcp_policy.py::build_mcp_message_policy`
+  — the NL analogue of Stage 4's ground-truth `build_mcp_policy`;
+  `local_runner.py` picks between them based on `decision_policy`.
+- `servers/common.py` — `TurnRequest` gained `opponent_message`/
+  `moves_made`/`max_moves`; `decide_move` now always returns
+  `TurnResponse{action, message}` (empty message for non-LLM policies).
+- Full detail, the Dec-POMDP formalization, and testing strategy (mocked
+  unit tests + a real-HTTP message-relay integration test) are in
+  `docs/PRD_mcp_orchestration.md`.
+
 ## Open design decisions deferred to later stages
 
-- Exact prompt/message format for the NL exchange (Stage 5) — see
-  `docs/PRD_mcp_orchestration.md` once written.
 - Cloud provider specifics and auth token mechanism (Stage 7, deferred).
 - Deeper (>1-ply) search or a non-adversarial evader model, to close the
-  documented adjacent-distance capture gap, is left as future work.
+  documented adjacent-distance capture gap (Stage 4), is left as future work.
+- Whether `decision_policy` default switches from `"heuristic"` to `"llm"`
+  once real end-to-end verification with an actual API key is complete.

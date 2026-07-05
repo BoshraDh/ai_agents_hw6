@@ -6,14 +6,15 @@ natural language over two separate [FastMCP](https://github.com/jlowin/fastmcp)
 servers. See `docs/PRD.md` for the full requirements and `docs/PLAN.md` for
 the staged build roadmap; this project is built one stage at a time.
 
-**Current status: Stage 4 complete** — the game engine, the two independent
-MCP servers, the local orchestrator, and a real decision mechanism (a
-default chase/flee heuristic, plus an optional tabular Q-learning policy)
-are all wired together. Move selection is genuinely tactical, config-selectable
-via `decision_policy` in `config/setup.json` — see `docs/PRD_decision_engine.md`
-for the design, a couple of real bugs found and fixed along the way, and an
-honestly documented known limitation. The natural-language protocol (Stage 5)
-and Gmail reporting (Stage 8) land in later stages.
+**Current status: Stage 5 complete** — on top of the heuristic/Q-learning
+decision policies (Stage 4), the Cop and Thief can now genuinely
+communicate: an `"llm"` decision policy (OpenAI-backed, via a rate-limited
+`ApiGatekeeper`) lets each side send and receive real free-text messages
+through MCP, with no ground-truth opponent position ever shared — see
+`docs/PRD_mcp_orchestration.md` for the Dec-POMDP design. `decision_policy`
+in `config/setup.json` still defaults to `"heuristic"`; `"llm"` is fully
+built and tested (mocked in automated tests) pending a real API key for
+final end-to-end confirmation. Gmail reporting (Stage 8) lands later.
 
 ## Requirements
 
@@ -48,8 +49,10 @@ uv run python -m cop_thief_mcp.servers.thief_server.server  # http://127.0.0.1:8
 
 Each exposes a `ping` health-check and a `decide_move` tool, backed by the
 policy named in `config/setup.json`'s `decision_policy`
-(`"heuristic"` [default], `"random_walk"`, or `"q_learning"`) — see
-`docs/PRD_decision_engine.md`. Host/port come from `config/mcp_servers.json`.
+(`"heuristic"` [default], `"random_walk"`, `"q_learning"`, or `"llm"`) —
+see `docs/PRD_decision_engine.md` and `docs/PRD_mcp_orchestration.md`.
+Host/port come from `config/mcp_servers.json`. The `"llm"` policy requires
+`OPENAI_API_KEY` in `.env` (copy `.env-example`).
 
 ## Running a full local game series
 
@@ -80,23 +83,25 @@ uv run pytest tests/ --cov=src --cov-report=term-missing
 uv run ruff check .
 ```
 
-Coverage must stay at or above 85% (currently 100% on all implemented
-modules); linting must pass with zero violations.
+Coverage must stay at or above 85% (currently 98.82% overall, 110 tests);
+linting must pass with zero violations. All LLM tests mock the OpenAI
+client — no real API calls or cost in the automated suite.
 
 ## Project structure
 
 ```
 src/cop_thief_mcp/
 ├── services/game/         # pure game-logic engine (Stage 1)
-├── services/decision/      # decision policies behind the decide_move tool (Stage 3+)
+├── services/decision/      # heuristic/random_walk/q_learning policies (Stage 3+)
+├── services/llm/           # OpenAI-backed NL agent: prompts, client, decide_turn (Stage 5)
 ├── servers/                # Cop/Thief FastMCP servers (Stage 2-3)
-├── orchestrator/           # MCP-client game runner, full local run (Stage 3)
-├── shared/                 # config loading, version, constants, async bridge
+├── orchestrator/           # MCP-client game runner + message exchange (Stage 3-5)
+├── shared/                 # config, version, constants, async bridge, API gatekeeper
 └── main.py                 # CLI entry point
 tests/unit/                # mirrors src/ structure
-tests/integration/          # cross-component tests (real MCP transport + full local run)
+tests/integration/          # cross-component tests (real MCP transport, full local run, LLM message relay)
 docs/                       # PRD.md, PLAN.md, TODO.md, PRD_<mechanism>.md
-config/                     # setup.json, mcp_servers.json — all parameters
+config/                     # setup.json, mcp_servers.json, rate_limits.json — all parameters
 ```
 
 ## Documentation
@@ -108,6 +113,7 @@ config/                     # setup.json, mcp_servers.json — all parameters
 - `docs/PRD_mcp_transport.md` — Stage 2 mechanism-specific design
 - `docs/PRD_orchestrator.md` — Stage 3 mechanism-specific design
 - `docs/PRD_decision_engine.md` — Stage 4 mechanism-specific design
+- `docs/PRD_mcp_orchestration.md` — Stage 5 mechanism-specific design
 
 ## License
 
