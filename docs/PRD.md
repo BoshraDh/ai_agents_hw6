@@ -69,16 +69,15 @@ Dec-POMDP formalization (`⟨n, S, {Aᵢ}, P, R, {Ωᵢ}, O, γ⟩`) — full de
 
 ## Non-goals (current stage)
 
-Stages 1–5 (complete) cover the pure game-logic engine, the MCP transport
-skeleton, a fully wired local orchestrator, a real decision mechanism
-(heuristic/Q-learning), and now genuine LLM-driven natural-language
+Stages 1–5 (complete and verified) cover the pure game-logic engine, the
+MCP transport skeleton, a fully wired local orchestrator, a real decision
+mechanism (heuristic/Q-learning), and genuine LLM-driven natural-language
 communication (the `llm` decision policy, OpenAI-backed) — see
-`docs/PRD_mcp_orchestration.md` for the Dec-POMDP formalization and design,
-and `docs/PRD_decision_engine.md` for Stage 4's documented limitations.
-Real end-to-end verification of the `llm` policy against the actual OpenAI
-API is still pending a live API key (unit/integration tests are fully
-mocked). GUI, cloud deployment, and Gmail reporting remain out of scope
-until their respective stages (see `docs/PLAN.md`).
+`docs/PRD_mcp_orchestration.md` for the Dec-POMDP formalization, design,
+and real end-to-end verification results, and `docs/PRD_decision_engine.md`
+for Stage 4's documented limitations. GUI, cloud deployment, and Gmail
+reporting remain out of scope until their respective stages (see
+`docs/PLAN.md`).
 
 ## Success criteria
 

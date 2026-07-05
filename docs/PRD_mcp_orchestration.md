@@ -94,11 +94,30 @@ never hard-coded in `openai_agent.py` itself.
   prior stage's "does it actually work" claim was manually verified
   against real infrastructure, not just unit tests.
 
+### Real end-to-end verification (done)
+
+With a real `OPENAI_API_KEY` (kept only in a local, gitignored `.env`,
+never committed): a single real `decide_turn` call produced a legal
+action and a genuine natural-language message. A full small-scale game
+(3x3 grid, real MCP servers, real OpenAI on both sides, no mocking)
+completed correctly — the Cop captured the Thief in 4 moves, scoring
+20/5 as configured. One notable, honest observation: the Thief's
+messages in this run **volunteered its exact position** rather than
+lying or staying vague (e.g. "I moved to (2, 0) thinking it might be a
+good spot to hide!") — the current system prompt permits deception but
+doesn't incentivize it, so a truthful, cooperative-sounding model will
+often just self-report its location. Encouraging strategic
+vagueness/deception (if desired) is a prompt-engineering refinement, not
+a wiring gap, and is noted as potential future work.
+
 ## Open item
 
-`config/setup.json`'s `decision_policy` default remains `"heuristic"` as
-of this stage — `"llm"` is fully implemented and tested but not yet the
-default, pending a real API key for manual confirmation. See `docs/TODO.md`.
+`config/setup.json`'s `decision_policy` default remains `"heuristic"`
+even after real verification succeeded — real `llm` runs cost money and
+depend on network/API availability, so a free, deterministic policy stays
+the default for routine test/demo runs. `"llm"` is fully verified and
+available as an explicit opt-in via config. Revisit if the user wants it
+as the submission default.
 
 ## Acceptance criteria
 

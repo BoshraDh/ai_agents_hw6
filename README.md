@@ -6,15 +6,17 @@ natural language over two separate [FastMCP](https://github.com/jlowin/fastmcp)
 servers. See `docs/PRD.md` for the full requirements and `docs/PLAN.md` for
 the staged build roadmap; this project is built one stage at a time.
 
-**Current status: Stage 5 complete** — on top of the heuristic/Q-learning
-decision policies (Stage 4), the Cop and Thief can now genuinely
-communicate: an `"llm"` decision policy (OpenAI-backed, via a rate-limited
-`ApiGatekeeper`) lets each side send and receive real free-text messages
-through MCP, with no ground-truth opponent position ever shared — see
-`docs/PRD_mcp_orchestration.md` for the Dec-POMDP design. `decision_policy`
-in `config/setup.json` still defaults to `"heuristic"`; `"llm"` is fully
-built and tested (mocked in automated tests) pending a real API key for
-final end-to-end confirmation. Gmail reporting (Stage 8) lands later.
+**Current status: Stage 5 complete and verified** — on top of the
+heuristic/Q-learning decision policies (Stage 4), the Cop and Thief can
+now genuinely communicate: an `"llm"` decision policy (OpenAI-backed, via
+a rate-limited `ApiGatekeeper`) lets each side send and receive real
+free-text messages through MCP, with no ground-truth opponent position
+ever shared — see `docs/PRD_mcp_orchestration.md` for the Dec-POMDP
+design. Confirmed against the real OpenAI API (not just mocked tests): a
+real game with both agents LLM-driven completed correctly end-to-end.
+`decision_policy` in `config/setup.json` still defaults to `"heuristic"`
+for routine/free runs; pass `"llm"` to use real natural-language agents
+(requires `OPENAI_API_KEY` in `.env`). Gmail reporting (Stage 8) lands later.
 
 ## Requirements
 

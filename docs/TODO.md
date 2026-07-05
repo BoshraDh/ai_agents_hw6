@@ -92,10 +92,12 @@
       proves message relay over real MCP HTTP transport
 - [x] 110 tests total, 98.82% coverage, zero Ruff violations, all files <= 137 lines
 - [x] `docs/PRD_mcp_orchestration.md` — Dec-POMDP formalization + design
-- [ ] Real end-to-end verification with an actual `OPENAI_API_KEY` (still
-      pending -- user has not yet provided a key)
+- [x] Real end-to-end verification with an actual `OPENAI_API_KEY`: single
+      real `decide_turn` call, then a full real game (3x3 grid, real MCP
+      servers, real OpenAI both sides, no mocking) -- Cop captured Thief
+      in 4 moves, scored 20/5 correctly. See docs/PRD_mcp_orchestration.md.
 - [x] Commit + push Stage 5
-- [ ] Report to user, get go-ahead for Stage 6
+- [x] Report to user, get go-ahead for Stage 6
 
 ## Stage 6 — Optional visualization (not started)
 
