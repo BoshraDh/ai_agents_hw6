@@ -4,6 +4,7 @@
   "max_moves": 25,
   "num_games": 6,
   "max_barriers": 5,
+  "decision_policy": "heuristic",
   "scoring": {
     "cop_win": {"cop": 20, "thief": 5},
     "thief_win": {"cop": 5, "thief": 10}

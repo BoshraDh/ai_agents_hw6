@@ -17,6 +17,7 @@ def _config(num_games: int) -> GameConfig:
         max_moves=25,
         num_games=num_games,
         max_barriers=5,
+        decision_policy="heuristic",
         scoring=SCORING,
     )
 

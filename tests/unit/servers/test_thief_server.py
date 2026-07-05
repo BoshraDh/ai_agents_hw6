@@ -22,7 +22,15 @@ def test_thief_server_ping():
 
 
 def test_thief_server_decide_move_returns_legal_action():
-    request = {"own_row": 2, "own_col": 2, "grid_rows": 5, "grid_cols": 5, "barriers": []}
+    request = {
+        "own_row": 2,
+        "own_col": 2,
+        "opponent_row": 0,
+        "opponent_col": 0,
+        "grid_rows": 5,
+        "grid_cols": 5,
+        "barriers": [],
+    }
 
     result = _call_tool("decide_move", {"request": request})
 

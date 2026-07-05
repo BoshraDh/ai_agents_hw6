@@ -49,11 +49,29 @@
 - [x] Commit + push Stage 3
 - [ ] Report to user, get go-ahead for Stage 4
 
-## Stage 4 — Decision mechanism (not started)
+## Stage 4 — Decision mechanism
 
-- [ ] `services/decision/heuristic.py` — default policy (e.g. distance-based)
-- [ ] `services/decision/q_learning.py` — optional tabular Q-table policy
-- [ ] Replace `random_walk` behind the `decide_move` tool with the real policy
+- [x] `services/decision/heuristic.py` — default policy: 1-ply-lookahead
+      chase (Cop) / greedy flee with mobility tie-break (Thief)
+- [x] Found + fixed: plain-greedy Cop oscillation bug (never captures from
+      some starts without lookahead)
+- [x] Found + removed: corner-pinch barrier heuristic (barricaded its own
+      starting corner instead of chasing)
+- [x] `services/decision/q_learning.py` + `q_learning_training.py` —
+      optional tabular Q-table, Bellman-equation updates, self-play training
+- [x] Found + fixed: training always started from the same fixed corners,
+      leaving close-range states poorly learned; randomized per episode
+- [x] `services/decision/dispatch.py` — config-selectable policy dispatch
+- [x] `config/setup.json` — added `decision_policy` (default `heuristic`)
+- [x] `servers/common.py` — `TurnRequest` extended with opponent position
+      + barrier counts (documented reversal of Stage 3's no-opponent rule)
+- [x] Documented known limitation: adjacent (distance-1) starts can still
+      produce a non-capturing cycle for both policies; all other tested
+      separations capture reliably
+- [x] 83 tests total, 99.09% coverage, zero Ruff violations
+- [x] `docs/PRD_decision_engine.md` written; PRD/PLAN/TODO/README updated
+- [x] Commit + push Stage 4
+- [ ] Report to user, get go-ahead for Stage 5
 
 ## Stage 5 — Natural-language protocol (not started)
 

@@ -23,6 +23,7 @@ class GameConfig:
     max_moves: int
     num_games: int
     max_barriers: int
+    decision_policy: str
     scoring: ScoringConfig
 
 
@@ -41,6 +42,7 @@ def load_config(path: Path | None = None) -> GameConfig:
         max_moves=raw["max_moves"],
         num_games=raw["num_games"],
         max_barriers=raw["max_barriers"],
+        decision_policy=raw["decision_policy"],
         scoring=ScoringConfig(
             cop_win_cop=scoring_raw["cop_win"]["cop"],
             cop_win_thief=scoring_raw["cop_win"]["thief"],

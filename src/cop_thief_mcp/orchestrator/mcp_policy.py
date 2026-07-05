@@ -1,9 +1,11 @@
 """Builds a synchronous Policy (for the Stage 1 engine) backed by an MCP `decide_move` call.
 
-Only the acting agent's own position, the grid, and barriers are sent to
-its server — never the opponent's position — enforcing the
-partial-observability boundary from docs/PRD_game_engine.md at the
-transport level.
+The request includes the opponent's true position, grid, and barrier
+state, so Stage 4's heuristic/Q-table decision policies can make
+genuinely tactical chase/flee decisions. See docs/PRD_decision_engine.md
+for why this reverses Stage 3's "own state only" rule, and how Stage 5
+changes the *source* of the opponent-position field (an NL-inferred
+belief instead of ground truth) without changing the wire contract.
 """
 
 from fastmcp import Client
@@ -14,14 +16,18 @@ from cop_thief_mcp.shared.async_bridge import AsyncBridge
 
 
 def build_decide_move_request(context: TurnContext) -> dict:
-    """Extract only what the acting agent may legitimately know about itself and the board."""
+    """Serialize a TurnContext into the decide_move tool's wire request."""
     return {
         "request": {
             "own_row": context.own_position.row,
             "own_col": context.own_position.col,
+            "opponent_row": context.opponent_position.row,
+            "opponent_col": context.opponent_position.col,
             "grid_rows": context.grid.rows,
             "grid_cols": context.grid.cols,
             "barriers": [[p.row, p.col] for p in context.barriers],
+            "barriers_placed": context.barriers_placed,
+            "max_barriers": context.max_barriers,
         }
     }
 

@@ -6,11 +6,13 @@ natural language over two separate [FastMCP](https://github.com/jlowin/fastmcp)
 servers. See `docs/PRD.md` for the full requirements and `docs/PLAN.md` for
 the staged build roadmap; this project is built one stage at a time.
 
-**Current status: Stage 3 complete** — the game engine, the two independent
-MCP servers, and a local orchestrator are fully wired together: a real
-6-game series runs end-to-end through genuine MCP `decide_move` calls over
-HTTP. Move selection is still a placeholder (uniformly random legal move)
-— real decision-making (Stage 4), the natural-language protocol (Stage 5),
+**Current status: Stage 4 complete** — the game engine, the two independent
+MCP servers, the local orchestrator, and a real decision mechanism (a
+default chase/flee heuristic, plus an optional tabular Q-learning policy)
+are all wired together. Move selection is genuinely tactical, config-selectable
+via `decision_policy` in `config/setup.json` — see `docs/PRD_decision_engine.md`
+for the design, a couple of real bugs found and fixed along the way, and an
+honestly documented known limitation. The natural-language protocol (Stage 5)
 and Gmail reporting (Stage 8) land in later stages.
 
 ## Requirements
@@ -44,11 +46,12 @@ uv run python -m cop_thief_mcp.servers.cop_server.server    # http://127.0.0.1:8
 uv run python -m cop_thief_mcp.servers.thief_server.server  # http://127.0.0.1:8002/mcp
 ```
 
-Each exposes a `ping` health-check and a `decide_move` tool (currently a
-placeholder random-legal-move policy — see `docs/PRD_orchestrator.md`).
-Host/port come from `config/mcp_servers.json`.
+Each exposes a `ping` health-check and a `decide_move` tool, backed by the
+policy named in `config/setup.json`'s `decision_policy`
+(`"heuristic"` [default], `"random_walk"`, or `"q_learning"`) — see
+`docs/PRD_decision_engine.md`. Host/port come from `config/mcp_servers.json`.
 
-## Running a full local game series (Stage 3)
+## Running a full local game series
 
 ```bash
 uv run python -c "
@@ -67,8 +70,8 @@ MCP tool calls, and tears the servers down afterward.
 ## Configuration
 
 All game parameters live in `config/setup.json` — grid size, max moves per
-sub-game, number of sub-games in a series, max barriers, and the scoring
-table. Nothing is hard-coded in source.
+sub-game, number of sub-games in a series, max barriers, the decision
+policy, and the scoring table. Nothing is hard-coded in source.
 
 ## Testing
 
@@ -104,6 +107,7 @@ config/                     # setup.json, mcp_servers.json — all parameters
 - `docs/PRD_game_engine.md` — Stage 1 mechanism-specific design
 - `docs/PRD_mcp_transport.md` — Stage 2 mechanism-specific design
 - `docs/PRD_orchestrator.md` — Stage 3 mechanism-specific design
+- `docs/PRD_decision_engine.md` — Stage 4 mechanism-specific design
 
 ## License
 

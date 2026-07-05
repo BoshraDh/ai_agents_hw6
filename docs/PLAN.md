@@ -7,7 +7,7 @@
 | 1 | Game logic, grid rules, movement, barriers, win conditions, scoring | **Done** |
 | 2 | Basic MCP transport — two independent FastMCP servers (stub tools) | **Done** |
 | 3 | Full local run: orchestrator drives real turns end-to-end on localhost | **Done** |
-| 4 | Decision mechanism: heuristic first, Q-table as an optional pluggable policy | Not started |
+| 4 | Decision mechanism: heuristic first, Q-table as an optional pluggable policy | **Done** |
 | 5 | Natural-language protocol: real LLM-generated messages replace stubs | Not started |
 | 6 | Optional GUI/CLI visualization of the grid | Not started |
 | 7 | Cloud deployment (e.g. Prefect Cloud), tokens, revocable auth | Deferred |
@@ -25,7 +25,7 @@ cop-thief-mcp/
 │   ├── sdk/                 # single entry point for all business logic (added stage 3+)
 │   ├── services/
 │   │   ├── game/            # DONE — grid.py, rules.py, sub_game.py, game_series.py, scoring.py
-│   │   ├── decision/        # DONE (placeholder) — random_walk.py; heuristic.py, q_learning.py (stage 4)
+│   │   ├── decision/        # DONE — random_walk.py, heuristic.py (default), q_learning.py + q_learning_training.py (optional), dispatch.py
 │   │   └── reporting/       # gmail_report.py (stage 8)
 │   ├── servers/
 │   │   ├── common.py         # DONE — shared server factory: `ping` + `decide_move` tools
@@ -88,10 +88,11 @@ orchestrator-level decision for a later stage, not a game-rule.
   random legal move, or PASS if boxed in). Proves wiring only; replaced
   behind the same `decide_move` tool interface in Stage 4.
 - `servers/common.py::build_agent_server` now also registers a
-  `decide_move` tool whose request (`TurnRequest`) carries only the
-  acting agent's own position, the grid, and barriers — never the
-  opponent's position, enforcing partial observability at the transport
-  level from this stage onward.
+  `decide_move` tool whose request (`TurnRequest`) carries the acting
+  agent's own position, the grid, and barriers — **and, as of Stage 4,
+  the opponent's position too** (see `docs/PRD_decision_engine.md` for
+  why this reverses the "never the opponent's position" rule stated here
+  originally).
 - `shared/async_bridge.py::AsyncBridge` — a background event-loop thread
   so the still-synchronous Stage 1 engine can call FastMCP's async
   `Client` without becoming async itself.
@@ -107,9 +108,34 @@ orchestrator-level decision for a later stage, not a game-rule.
   "start/stop a background HTTP server and wait until reachable" exists
   once, reused by both the transport test and the orchestrator.
 
+## Stage 4 architecture notes
+
+- `services/decision/heuristic.py` — default policy. Cop uses 1-ply
+  lookahead (anticipates the Thief's flee reply) to avoid a plain-greedy
+  oscillation bug found during this stage; Thief flees greedily with a
+  mobility tie-break. A barrier-placement heuristic was attempted, found
+  buggy (see `docs/PRD_decision_engine.md`), and removed rather than
+  patched further.
+- `services/decision/q_learning.py` + `q_learning_training.py` — optional
+  tabular Q-learning per the task doc's Bellman-equation recommendation,
+  relative-position state encoding, self-play training with randomized
+  starting positions (a training-coverage bug found and fixed this stage).
+- `services/decision/dispatch.py` — single `choose_action(...)` selecting
+  among `heuristic`/`random_walk`/`q_learning`; keeps decision logic out
+  of the transport layer (`servers/common.py`).
+- `config/setup.json` gained `decision_policy` (default `"heuristic"`).
+- `servers/common.py::TurnRequest` gained `opponent_row`/`opponent_col`
+  and `barriers_placed`/`max_barriers` — see the observability trade-off
+  writeup in `docs/PRD_decision_engine.md`.
+- Both the heuristic and Q-learning share a documented, understood
+  limitation: starting exactly adjacent (distance 1) can produce a stable
+  non-capturing cycle. Every other tested starting separation (distance
+  >= 2, including opposite grid corners) captures reliably.
+
 ## Open design decisions deferred to later stages
 
 - Exact prompt/message format for the NL exchange (Stage 5) — see
   `docs/PRD_mcp_orchestration.md` once written.
-- Whether Q-learning is enabled by default or opt-in (Stage 4).
 - Cloud provider specifics and auth token mechanism (Stage 7, deferred).
+- Deeper (>1-ply) search or a non-adversarial evader model, to close the
+  documented adjacent-distance capture gap, is left as future work.

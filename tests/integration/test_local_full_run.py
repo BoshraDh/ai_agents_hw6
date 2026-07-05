@@ -18,6 +18,7 @@ TEST_GAME_CONFIG = GameConfig(
     max_moves=10,
     num_games=3,
     max_barriers=5,
+    decision_policy="heuristic",
     scoring=ScoringConfig(cop_win_cop=20, cop_win_thief=5, thief_win_cop=5, thief_win_thief=10),
 )
 
