@@ -9,7 +9,7 @@
 | 3 | Full local run: orchestrator drives real turns end-to-end on localhost | **Done** |
 | 4 | Decision mechanism: heuristic first, Q-table as an optional pluggable policy | **Done** |
 | 5 | Natural-language protocol: real LLM-generated messages replace stubs | **Done** |
-| 6 | Optional GUI/CLI visualization of the grid | Not started |
+| 6 | Optional GUI/CLI visualization of the grid | **Done** |
 | 7 | Cloud deployment (e.g. Prefect Cloud), tokens, revocable auth | Deferred |
 | 8 | Gmail API integration — auto-report JSON at end of 6-game series | Not started |
 
@@ -34,6 +34,8 @@ cop-thief-mcp/
 │   │   └── thief_server/     # DONE — FastMCP app bound to Role.THIEF
 │   ├── orchestrator/         # DONE — mcp_policy.py (+ message_exchange.py), local_runner.py
 │   ├── services/llm/         # DONE — prompts.py, openai_agent.py, client_factory.py (Stage 5)
+│   ├── services/visualization/ # DONE — grid_renderer.py (Stage 6, optional)
+│   ├── cli/                  # DONE — watch_game.py (Stage 6, optional)
 │   ├── shared/               # DONE — config.py, mcp_config.py, json_loader.py, async_bridge.py, gatekeeper.py, rate_limits_config.py, version.py, constants.py
 │   └── main.py               # CLI entry point
 ├── tests/{unit,integration}/
@@ -158,6 +160,23 @@ orchestrator-level decision for a later stage, not a game-rule.
   unit tests + a real-HTTP message-relay integration test) are in
   `docs/PRD_mcp_orchestration.md`.
 
+## Stage 6 architecture notes (optional, per the task doc)
+
+- `services/game/sub_game.py` — `run_sub_game` gained an optional
+  `on_turn: OnTurn | None = None` parameter (threaded through
+  `run_game_series` and `local_runner.py::run_full_local_series`),
+  emitting a `TurnEvent` after every half-turn. Purely observational,
+  backward compatible (defaults to `None`) — every Stage 1-5 test passed
+  unchanged after this addition.
+- `services/visualization/grid_renderer.py::render_grid` — pure ASCII
+  rendering (`C`/`T`/`#`/`X`/`.`), no influence on gameplay.
+- `cli/watch_game.py` — `uv run python -m cop_thief_mcp.cli.watch_game`
+  prints the grid after every turn using whichever `decision_policy` is
+  configured. Manually verified against the real local MCP pipeline.
+- Live NL-message display alongside the grid was deliberately left out
+  this stage (messages live in `MessageExchange`, not `TurnEvent`) — see
+  `docs/PRD_visualization.md`.
+
 ## Open design decisions deferred to later stages
 
 - Cloud provider specifics and auth token mechanism (Stage 7, deferred).
@@ -165,3 +184,5 @@ orchestrator-level decision for a later stage, not a game-rule.
   documented adjacent-distance capture gap (Stage 4), is left as future work.
 - Whether `decision_policy` default switches from `"heuristic"` to `"llm"`
   once real end-to-end verification with an actual API key is complete.
+- Whether the CLI visualizer should also display live NL messages
+  alongside the grid (Stage 6 follow-up, not yet built).

@@ -99,9 +99,20 @@
 - [x] Commit + push Stage 5
 - [x] Report to user, get go-ahead for Stage 6
 
-## Stage 6 — Optional visualization (not started)
+## Stage 6 — Optional visualization
 
-- [ ] Minimal CLI/GUI rendering of the grid per turn
+- [x] `services/game/sub_game.py` — optional `on_turn`/`TurnEvent` callback,
+      backward-compatible (threaded through `run_game_series` + `local_runner.py`)
+- [x] `services/visualization/grid_renderer.py` — pure ASCII grid renderer
+- [x] `cli/watch_game.py` — `uv run python -m cop_thief_mcp.cli.watch_game`
+- [x] Unit tests for turn events, renderer, and CLI printer (all via `capsys`)
+- [x] Manually ran the CLI watch script against the real local MCP
+      pipeline; grid updates correctly turn by turn
+- [x] All prior Stage 1-5 tests pass unchanged (no behavior change)
+- [x] 119 tests total, 98.92% coverage, zero Ruff violations
+- [x] `docs/PRD_visualization.md` written; PRD/PLAN/TODO/README updated
+- [x] Commit + push Stage 6
+- [ ] Report to user, get go-ahead for Stage 7/8
 
 ## Stage 7 — Cloud deployment (deferred, not started)
 

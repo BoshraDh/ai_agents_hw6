@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from cop_thief_mcp.services.game.grid import Grid, Position
 from cop_thief_mcp.services.game.scoring import score_sub_game
-from cop_thief_mcp.services.game.sub_game import Policy, SubGameResult, run_sub_game
+from cop_thief_mcp.services.game.sub_game import OnTurn, Policy, SubGameResult, run_sub_game
 from cop_thief_mcp.shared.config import GameConfig
 
 
@@ -21,12 +21,15 @@ def run_game_series(
     cop_policy: Policy,
     thief_policy: Policy,
     config: GameConfig,
+    on_turn: OnTurn | None = None,
 ) -> GameSeriesResult:
     """Play `config.num_games` sub-games back-to-back, accumulating cop/thief totals.
 
     `starts` supplies the (cop, thief) starting positions for each sub-game and
     must contain exactly `config.num_games` entries — placement strategy is a
     decision left to the caller (random draw, fixed layout, or later strategy).
+    `on_turn`, if given, is forwarded to every sub-game for observation only
+    (e.g. visualization) and cannot affect the outcome.
     """
     if len(starts) != config.num_games:
         raise ValueError(f"expected {config.num_games} starting position pairs, got {len(starts)}")
@@ -38,7 +41,7 @@ def run_game_series(
     for cop_start, thief_start in starts:
         result = run_sub_game(
             grid, cop_start, thief_start, cop_policy, thief_policy,
-            config.max_moves, config.max_barriers,
+            config.max_moves, config.max_barriers, on_turn,
         )
         cop_score, thief_score = score_sub_game(result.outcome, config.scoring)
         cop_total += cop_score

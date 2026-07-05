@@ -15,6 +15,7 @@ from cop_thief_mcp.servers.thief_server.server import mcp as thief_mcp
 from cop_thief_mcp.services.decision.dispatch import LLM
 from cop_thief_mcp.services.game.game_series import GameSeriesResult, run_game_series
 from cop_thief_mcp.services.game.grid import Grid, Position, Role
+from cop_thief_mcp.services.game.sub_game import OnTurn
 from cop_thief_mcp.shared.async_bridge import AsyncBridge
 from cop_thief_mcp.shared.config import GameConfig, load_config
 from cop_thief_mcp.shared.mcp_config import McpServersConfig, load_mcp_servers_config
@@ -38,8 +39,13 @@ def run_full_local_series(
     starts: list[tuple[Position, Position]],
     game_config: GameConfig | None = None,
     servers_config: McpServersConfig | None = None,
+    on_turn: OnTurn | None = None,
 ) -> GameSeriesResult:
-    """Start both MCP servers locally, play a full series through them, then tear down."""
+    """Start both MCP servers locally, play a full series through them, then tear down.
+
+    `on_turn`, if given, is forwarded to the engine for observation only
+    (e.g. a CLI/GUI visualizer) — see `services/visualization/grid_renderer.py`.
+    """
     game_config = game_config or load_config()
     servers_config = servers_config or load_mcp_servers_config()
     grid = Grid(rows=game_config.grid_rows, cols=game_config.grid_cols)
@@ -61,7 +67,7 @@ def run_full_local_series(
                 _server_url(servers_config.thief_server.host, servers_config.thief_server.port),
                 bridge,
             )
-            return run_game_series(grid, starts, cop_policy, thief_policy, game_config)
+            return run_game_series(grid, starts, cop_policy, thief_policy, game_config, on_turn)
         finally:
             bridge.run(stop_server(cop_task))
             bridge.run(stop_server(thief_task))

@@ -6,17 +6,15 @@ natural language over two separate [FastMCP](https://github.com/jlowin/fastmcp)
 servers. See `docs/PRD.md` for the full requirements and `docs/PLAN.md` for
 the staged build roadmap; this project is built one stage at a time.
 
-**Current status: Stage 5 complete and verified** — on top of the
-heuristic/Q-learning decision policies (Stage 4), the Cop and Thief can
-now genuinely communicate: an `"llm"` decision policy (OpenAI-backed, via
-a rate-limited `ApiGatekeeper`) lets each side send and receive real
-free-text messages through MCP, with no ground-truth opponent position
-ever shared — see `docs/PRD_mcp_orchestration.md` for the Dec-POMDP
-design. Confirmed against the real OpenAI API (not just mocked tests): a
-real game with both agents LLM-driven completed correctly end-to-end.
-`decision_policy` in `config/setup.json` still defaults to `"heuristic"`
-for routine/free runs; pass `"llm"` to use real natural-language agents
-(requires `OPENAI_API_KEY` in `.env`). Gmail reporting (Stage 8) lands later.
+**Current status: Stage 6 complete** — on top of the heuristic/Q-learning
+decision policies (Stage 4) and real LLM-driven natural-language
+communication (Stage 5, verified against the real OpenAI API), you can
+now watch a game unfold: `uv run python -m cop_thief_mcp.cli.watch_game`
+prints the ASCII grid after every turn. `decision_policy` in
+`config/setup.json` still defaults to `"heuristic"` for routine/free
+runs; pass `"llm"` to use real natural-language agents (requires
+`OPENAI_API_KEY` in `.env`). Cloud deployment (Stage 7) and Gmail
+reporting (Stage 8) land later.
 
 ## Requirements
 
@@ -72,6 +70,16 @@ print(result.cop_total, result.thief_total)
 This starts both MCP servers, plays a real 6-game series entirely through
 MCP tool calls, and tears the servers down afterward.
 
+## Watching a game live (Stage 6)
+
+```bash
+uv run python -m cop_thief_mcp.cli.watch_game
+```
+
+Runs a full local series (using whichever `decision_policy` is
+configured) and prints the ASCII grid (`C`/`T`/`#`/`X` for Cop/Thief/
+barrier/capture) after every turn.
+
 ## Configuration
 
 All game parameters live in `config/setup.json` — grid size, max moves per
@@ -85,7 +93,7 @@ uv run pytest tests/ --cov=src --cov-report=term-missing
 uv run ruff check .
 ```
 
-Coverage must stay at or above 85% (currently 98.82% overall, 110 tests);
+Coverage must stay at or above 85% (currently 98.92% overall, 119 tests);
 linting must pass with zero violations. All LLM tests mock the OpenAI
 client — no real API calls or cost in the automated suite.
 
@@ -96,8 +104,10 @@ src/cop_thief_mcp/
 ├── services/game/         # pure game-logic engine (Stage 1)
 ├── services/decision/      # heuristic/random_walk/q_learning policies (Stage 3+)
 ├── services/llm/           # OpenAI-backed NL agent: prompts, client, decide_turn (Stage 5)
+├── services/visualization/ # pure ASCII grid renderer (Stage 6, optional)
 ├── servers/                # Cop/Thief FastMCP servers (Stage 2-3)
 ├── orchestrator/           # MCP-client game runner + message exchange (Stage 3-5)
+├── cli/                    # watch_game.py (Stage 6, optional)
 ├── shared/                 # config, version, constants, async bridge, API gatekeeper
 └── main.py                 # CLI entry point
 tests/unit/                # mirrors src/ structure
@@ -116,6 +126,7 @@ config/                     # setup.json, mcp_servers.json, rate_limits.json —
 - `docs/PRD_orchestrator.md` — Stage 3 mechanism-specific design
 - `docs/PRD_decision_engine.md` — Stage 4 mechanism-specific design
 - `docs/PRD_mcp_orchestration.md` — Stage 5 mechanism-specific design
+- `docs/PRD_visualization.md` — Stage 6 mechanism-specific design
 
 ## License
 
